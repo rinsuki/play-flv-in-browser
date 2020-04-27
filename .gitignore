@@ -1,2 +1,6 @@
 ffmpeg/src
 ffmpeg/built
+wasm/build
+node_modules
+dist
+.cache
