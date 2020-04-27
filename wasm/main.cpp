@@ -13,7 +13,12 @@ EMSCRIPTEN_BINDINGS(my_module)
         .function("packetUnref", &AVFile::packetUnref)
         .function("sendPacket", &AVFile::sendPacket)
         .function("receiveFrame", &AVFile::receiveFrame)
+        .function("width", &AVFile::width)
+        .function("height", &AVFile::height)
+        .function("getPixFmt", &AVFile::getPixFmt)
+        .function("convertFrameToRGB", &AVFile::convertFrameToRGB)
         .property("isFailed", &AVFile::getIsFailed);
+    emscripten::register_vector<uint8_t>("vector<uint8_t>");
 }
 
 int main(int argc, const char **argv)

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "libav.h"
 
 class AVFile
@@ -9,6 +10,9 @@ class AVFile
     AVCodecContext *codecContext;
     AVFrame *frame = av_frame_alloc();
     AVPacket *packet;
+    SwsContext *swsCtx;
+
+    uint8_t *out = nullptr;
 
 public:
     bool isFailed = false;
@@ -109,5 +113,40 @@ public:
     bool inline getIsFailed() const
     {
         return this->isFailed;
+    }
+
+    // ---
+
+    int inline width()
+    {
+        return frame->width;
+    }
+
+    int inline height()
+    {
+        return frame->height;
+    }
+
+    std::vector<uint8_t> inline convertFrameToRGB()
+    {
+        swsCtx = sws_getCachedContext(
+            swsCtx,
+            /* src */ frame->width, frame->height, (AVPixelFormat)frame->format,
+            /* dst */ frame->width, frame->height, AV_PIX_FMT_RGBA,
+            SWS_BILINEAR, NULL, NULL, NULL);
+        const unsigned int size = 4 * frame->width * frame->height;
+        out = (uint8_t *)calloc(size, sizeof(uint8_t));
+        uint8_t *argb[1] = {out};
+        int argb_stride[1] = {4 * frame->width};
+        sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
+        std::vector<uint8_t> vec(out, out + size);
+        free(out);
+        return vec;
+    }
+
+    void getPixFmt()
+    {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get((AVPixelFormat)(frame->format));
+        std::cout << desc->name << std::endl;
     }
 };

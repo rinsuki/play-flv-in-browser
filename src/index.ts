@@ -6,6 +6,9 @@ const flvPath = document.querySelector<HTMLLinkElement>(`link[data-flv-file]`).h
 
 const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 
+const canvas = document.createElement("canvas");
+document.body.appendChild(canvas)
+
 fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
     const module: EmscriptenModule = wasm({
         locateFile: () => wasmPath,
@@ -24,8 +27,21 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
                     }
                     while (file.receiveFrame() == 0) {
                         console.log("receiving frame");
+                        const width = file.width();
+                        const height = file.height();
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        const vector = file.convertFrameToRGB();
+                        const size = file.convertFrameToRGB().size()
+                        const imgDat = ctx.createImageData(width, height);
+                        for (let i=0; i<size; i++) {
+                            imgDat.data[i] = vector.get(i);
+                        }
+                        vector.delete();
+                        ctx.putImageData(imgDat, 0, 0)
+                        await nextFrame();
                     }
-                } else {
                 }
                 file.packetUnref();
             }
