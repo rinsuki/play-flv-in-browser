@@ -5,3 +5,4 @@ node_modules
 dist
 .cache
 src/target.flv
+.vscode

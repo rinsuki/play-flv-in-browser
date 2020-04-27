@@ -5,11 +5,14 @@ const wasmPath = document.querySelector<HTMLLinkElement>(`link[data-wasm-file]`)
 const flvPath = document.querySelector<HTMLLinkElement>(`link[data-flv-file]`).href
 
 fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
-    const module = wasm({
+    const module: EmscriptenModule = wasm({
         locateFile: () => wasmPath,
         // noInitialRun: true,
         preRun: [() => {
-            module.FS_createDataFile("/", "input.flv", new Uint8Array(flv), true, false, false)
+            module["FS_createDataFile"]("/", "input.flv", new Uint8Array(flv), true, false, false)
+        }],
+        postRun: [() => {
+            console.log(new module["AVFile"]("/input.flv"));
         }]
     })
     window.module = module
