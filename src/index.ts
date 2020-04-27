@@ -4,10 +4,15 @@ import wasm from "../wasm/build/wasm-module.js"
 const wasmPath = document.querySelector<HTMLLinkElement>(`link[data-wasm-file]`).href
 const flvPath = document.querySelector<HTMLLinkElement>(`link[data-flv-file]`).href
 
-const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+const nextFrame = () => new Promise(resolve => setTimeout(resolve, 0));
 
-const canvas = document.createElement("canvas");
-document.body.appendChild(canvas)
+var fps = 0
+setInterval(() => {
+    document.getElementById("fps").innerText = `${fps}fps`
+    fps = 0
+}, 1000)
+
+const canvas: HTMLCanvasElement = document.getElementById("canvas");
 
 fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
     const module: EmscriptenModule = wasm({
@@ -19,6 +24,8 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
         postRun: [async () => {
             const file = new module["AVFile"]("/input.flv");
             console.log(file);
+            var ctx: CanvasRenderingContext2D | undefined = undefined
+            var imgDat: ImageData | undefined = undefined
             while (file.readFrame() == 0) {
                 const isVideoStream = file.isVideoStream()
                 if (isVideoStream) {
@@ -26,19 +33,20 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
                         console.error("avcodec_send_packet failed");
                     }
                     while (file.receiveFrame() == 0) {
-                        console.log("receiving frame");
-                        const width = file.width();
-                        const height = file.height();
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext("2d");
-                        const received: Uint8Array = file.convertFrameToRGB();
-                        const size = received.length
-                        const imgDat = ctx.createImageData(width, height);
-                        for (let i=0; i<size; i++) {
-                            imgDat.data[i] = received[i];
+                        fps++
+                        console.time("decode");
+                        if (imgDat == null || ctx == null) {
+                            const width = file.width();
+                            const height = file.height();
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx = canvas.getContext("2d");
+                            imgDat = ctx.createImageData(width, height);
                         }
+                        const received: Uint8Array = file.convertFrameToRGB();
+                        imgDat.data.set(received);
                         ctx.putImageData(imgDat, 0, 0)
+                        console.timeEnd("decode");
                         await nextFrame();
                     }
                 }

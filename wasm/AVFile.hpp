@@ -136,9 +136,8 @@ public:
             /* dst */ frame->width, frame->height, AV_PIX_FMT_RGBA,
             SWS_BILINEAR, NULL, NULL, NULL);
         const unsigned int size = 4 * frame->width * frame->height;
-        if (out != nullptr)
-            free(out);
-        out = (uint8_t *)calloc(size, sizeof(uint8_t));
+        if (out == nullptr)
+            out = (uint8_t *)calloc(size, sizeof(uint8_t));
         uint8_t *argb[1] = {out};
         int argb_stride[1] = {4 * frame->width};
         sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
