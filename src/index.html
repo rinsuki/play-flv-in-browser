@@ -3,10 +3,11 @@
     <head>
         <meta charset="UTF-8">
         <link rel="prefetch" href="../wasm/build/wasm-module.wasm" data-wasm-file>
-        <link rel="prefetch" href="./target.flv" data-flv-file>
         <script src="./index.ts" defer></script>
     </head>
     <body>
+        <input type="file" id="file" accept="video/x-flv">
+        <button id="start">Start</button>
         <span id="fps"></span>
         <div>
             <canvas id="canvas"></canvas>

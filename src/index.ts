@@ -2,9 +2,8 @@ import wasm from "../wasm/build/wasm-module.js"
 
 // Parcel に wasm をロードさせずコピーだけさせてパスを取る方法がこれしか思い付かなかった
 const wasmPath = document.querySelector<HTMLLinkElement>(`link[data-wasm-file]`).href
-const flvPath = document.querySelector<HTMLLinkElement>(`link[data-flv-file]`).href
 
-const nextFrame = () => new Promise(resolve => setTimeout(resolve, 0));
+const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 
 var fps = 0
 setInterval(() => {
@@ -12,9 +11,23 @@ setInterval(() => {
     fps = 0
 }, 1000)
 
-const canvas: HTMLCanvasElement = document.getElementById("canvas");
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const fileSelector = document.getElementById("file") as HTMLInputElement;
+const start = document.getElementById("start") as HTMLButtonElement;
 
-fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
+start.addEventListener("click", e => {
+    if (fileSelector.files.length < 1) return alert("ファイルを選択してください")
+    start.disabled = true
+    const file = fileSelector.files.item(0)
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file)
+    reader.onload = () => {
+        load(reader.result as ArrayBuffer)
+    }
+    console.log(file)
+})
+
+async function load(flv: ArrayBuffer) {
     const module: EmscriptenModule = wasm({
         locateFile: () => wasmPath,
         // noInitialRun: true,
@@ -34,7 +47,6 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
                     }
                     while (file.receiveFrame() == 0) {
                         fps++
-                        console.time("decode");
                         if (imgDat == null || ctx == null) {
                             const width = file.width();
                             const height = file.height();
@@ -46,7 +58,6 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
                         const received: Uint8Array = file.convertFrameToRGB();
                         imgDat.data.set(received);
                         ctx.putImageData(imgDat, 0, 0)
-                        console.timeEnd("decode");
                         await nextFrame();
                     }
                 }
@@ -55,6 +66,6 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
             console.log(file);
         }]
     })
-    window.module = module
+    window["module"] = module
     console.log("yay")
-})
+}
