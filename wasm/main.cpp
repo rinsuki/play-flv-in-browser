@@ -6,7 +6,14 @@
 
 EMSCRIPTEN_BINDINGS(my_module)
 {
-    emscripten::class_<AVFile>("AVFile").constructor<std::string>();
+    emscripten::class_<AVFile>("AVFile")
+        .constructor<std::string>()
+        .function("readFrame", &AVFile::readFrame)
+        .function("isVideoStream", &AVFile::isVideoStream)
+        .function("packetUnref", &AVFile::packetUnref)
+        .function("sendPacket", &AVFile::sendPacket)
+        .function("receiveFrame", &AVFile::receiveFrame)
+        .property("isFailed", &AVFile::getIsFailed);
 }
 
 int main(int argc, const char **argv)
