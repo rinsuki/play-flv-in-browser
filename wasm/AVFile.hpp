@@ -137,7 +137,7 @@ public:
             SWS_BILINEAR, NULL, NULL, NULL);
         const unsigned int size = 4 * frame->width * frame->height;
         if (out == nullptr)
-            out = (uint8_t *)calloc(size, sizeof(uint8_t));
+            out = (uint8_t *)malloc(size);
         uint8_t *argb[1] = {out};
         int argb_stride[1] = {4 * frame->width};
         sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
