@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <emscripten/val.h>
 #include "libav.h"
 
 class AVFile
@@ -127,7 +128,7 @@ public:
         return frame->height;
     }
 
-    std::vector<uint8_t> inline convertFrameToRGB()
+    emscripten::val inline convertFrameToRGB()
     {
         swsCtx = sws_getCachedContext(
             swsCtx,
@@ -135,13 +136,13 @@ public:
             /* dst */ frame->width, frame->height, AV_PIX_FMT_RGBA,
             SWS_BILINEAR, NULL, NULL, NULL);
         const unsigned int size = 4 * frame->width * frame->height;
+        if (out != nullptr)
+            free(out);
         out = (uint8_t *)calloc(size, sizeof(uint8_t));
         uint8_t *argb[1] = {out};
         int argb_stride[1] = {4 * frame->width};
         sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
-        std::vector<uint8_t> vec(out, out + size);
-        free(out);
-        return vec;
+        return emscripten::val(emscripten::typed_memory_view(size, out));
     }
 
     void getPixFmt()

@@ -32,13 +32,12 @@ fetch(flvPath).then(flv => flv.arrayBuffer()).then(flv => {
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext("2d");
-                        const vector = file.convertFrameToRGB();
-                        const size = file.convertFrameToRGB().size()
+                        const received: Uint8Array = file.convertFrameToRGB();
+                        const size = received.length
                         const imgDat = ctx.createImageData(width, height);
                         for (let i=0; i<size; i++) {
-                            imgDat.data[i] = vector.get(i);
+                            imgDat.data[i] = received[i];
                         }
-                        vector.delete();
                         ctx.putImageData(imgDat, 0, 0)
                         await nextFrame();
                     }
