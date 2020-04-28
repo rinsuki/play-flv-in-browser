@@ -49,5 +49,5 @@ jobs:
         git config --local user.email "41898282@users.noreply.github.com"
         git config --local user.name "GitHub Actions"
         git add -A .
-        git commit -m "update with $COMMIT"
+        git commit -m --allow-empty "update with $COMMIT"
         git push
