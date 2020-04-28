@@ -36,6 +36,7 @@ async function load(flv: ArrayBuffer) {
         }],
         postRun: [async () => {
             const file = new module["AVFile"]("/input.flv");
+            if (file.isFailed) return alert("failed to decode file! (see browser developer tools console)")
             console.log(file);
             var ctx: CanvasRenderingContext2D | undefined = undefined
             var imgDat: ImageData | undefined = undefined
