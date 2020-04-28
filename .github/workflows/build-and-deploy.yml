@@ -30,6 +30,7 @@ jobs:
         key: v1-${{ hashFiles('ffmpeg/build-ffmpeg.sh') }}
     - run: source ./emsdk/emsdk_env.sh && cd ffmpeg && ./build-ffmpeg.sh
       if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
+    - run: mkdir -p ffmpeg/src
     # build application
     - name: Install dependencies
       run: yarn install
