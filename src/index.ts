@@ -44,8 +44,9 @@ async function load(flv: ArrayBuffer) {
                 audioFile.output()
             }
             if (audioFile.isFailed) return alert("failed to decode audio! (see browser developer tools console)")
-            const audio: Uint8Array = module["FS"].readFile(audioFile.path(), {encoding: "binary"})
-            const file = new File([audio], audioFile.path())
+            const audioFilePath = audioFile.path()
+            const audio: Uint8Array = module["FS"].readFile(audioFilePath, {encoding: "binary"})
+            const file = new File([audio], audioFilePath, {type: `audio/${audioFilePath.split(".")[1]}`})
             audioPlayer.src = URL.createObjectURL(file)
 
             const videoFile = new module["AVVideoFile"]("/input.flv");
@@ -57,7 +58,7 @@ async function load(flv: ArrayBuffer) {
             canvas.height = height;
             const ctx = canvas.getContext("2d");
             const imgDat = ctx.createImageData(width, height);
-            audioPlayer.play()
+            // audioPlayer.play()
 
             while (videoFile.readFrame() == 0) {
                 const isVideoStream = videoFile.isVideoStream()
