@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.5)
 project(PlayFLVInBrowser)
 
 set(CMAKE_C_FLAGS "-s MODULARIZE=1 -s FORCE_FILESYSTEM=1 --bind -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ALLOC_DYNAMIC\", \"allocate\", \"FS\"]' -s INITIAL_MEMORY=268435456")
