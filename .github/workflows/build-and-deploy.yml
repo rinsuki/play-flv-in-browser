@@ -22,11 +22,13 @@ jobs:
         ./emsdk install sdk-1.39.13-64bit
         ./emsdk activate --embedded sdk-1.39.13-64bit
     # build ffmpeg
-    - run: source ./emsdk_env.sh && cd ffmpeg && ./build-ffmpeg.sh
+    - run: source ./emsdk/emsdk_env.sh && cd ffmpeg && ./build-ffmpeg.sh
     # build application
     - name: Install dependencies
       run: yarn install
-    - name: Build
+    - name: Build WASM
+      run: source ./emsdk/emsdk_env.sh && mkdir -p wasm/build && cd wasm/build && emcmake cmake .. && emmake make -j
+    - name: Build parcel
       run: NODE_ENV=production yarn parcel build ./src/index.html
     # upload to dist branch
     - uses: actions/checkout@v2
