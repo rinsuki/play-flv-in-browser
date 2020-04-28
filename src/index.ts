@@ -16,7 +16,30 @@ setInterval(() => {
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const fileSelector = document.getElementById("file") as HTMLInputElement;
 const start = document.getElementById("start") as HTMLButtonElement;
+
+var lastUpdated = Date.now()
 const audioPlayer = document.getElementById("audio") as HTMLAudioElement;
+
+// Firefox の HTMLMediaElement.currentTime が25FPSぐらいでしか更新されないので
+// いい感じにごまかす
+const isFirefox = navigator.userAgent.includes("Firefox") && !location.hash.includes("disable-firefox-hack")
+let lastCurrentTime = 0
+let lastUpdatedMsec = performance.now()
+let now = performance.now()
+const highResCurrentTime = isFirefox ? () => {
+    const add = (now - lastUpdatedMsec)
+    const expected = lastCurrentTime + (add / 1000)
+    const diff = Math.abs(audioPlayer.currentTime - expected)
+    // console.log(diff)
+    const resetLine = diff > 0.075
+    if (resetLine) console.log("reset line")
+    if (resetLine || audioPlayer.paused) { // 100ms以上ズレたかpausedで強制同期
+        lastCurrentTime = audioPlayer.currentTime
+        lastUpdatedMsec = now
+        return lastCurrentTime
+    }
+    return expected
+} : () => audioPlayer.currentTime
 
 start.addEventListener("click", e => {
     if (fileSelector.files.length < 1) return alert("ファイルを選択してください")
@@ -86,22 +109,26 @@ async function load(flv: ArrayBuffer) {
                         const received: Uint8Array = videoFile.convertFrameToRGB();
                         imgDat.data.set(received);
 
+                        now = performance.now()
                         const pts = ptsToMsec(videoFile.pts())
-                        if (pts < (Math.floor(audioPlayer.currentTime * 1000) - 100)) {
+                        if (pts < (Math.floor(highResCurrentTime() * 1000) - 100) || pts > (Math.floor(highResCurrentTime() * 1000) + 900)) {
                             audioPlayer.currentTime = pts / 1000
+                            lastCurrentTime = audioPlayer.currentTime
+                            lastUpdated = now
                         }
+                        ctx.putImageData(imgDat, 0, 0)
                         if (
                             isFirst || // 最初のフレームは書く
                             skipRenderFrame > 10 || // 2フレーム以上レンダリングしてない場合
-                            pts > (Math.floor(audioPlayer.currentTime*1000)) // ptsがaudioPlayer.currentTimeを越える時
+                            pts > (Math.floor(highResCurrentTime()*1000)) // ptsがaudioPlayer.currentTimeを越える時
                         ) {
                             isFirst = false
                             skipRenderFrame = 0
                             waitPerSec++;
-                            ctx.putImageData(imgDat, 0, 0)
                             do {
                                 await nextFrame()
-                            } while(pts > (Math.floor(audioPlayer.currentTime*1000)))
+                                now = performance.now()
+                            } while(pts > (Math.floor(highResCurrentTime()*1000)) && pts < (Math.floor(highResCurrentTime() * 1000) + 1000))
                         }
                     }
                 }
