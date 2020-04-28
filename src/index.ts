@@ -19,6 +19,7 @@ const audioPlayer = document.getElementById("audio") as HTMLAudioElement;
 start.addEventListener("click", e => {
     if (fileSelector.files.length < 1) return alert("ファイルを選択してください")
     start.disabled = true
+    start.innerText = "Loading File..."
     const file = fileSelector.files.item(0)
     const reader = new FileReader()
     reader.readAsArrayBuffer(file)
@@ -29,6 +30,7 @@ start.addEventListener("click", e => {
 })
 
 async function load(flv: ArrayBuffer) {
+    start.innerText = "Loading WASM..."
     const module: EmscriptenModule = wasm({
         locateFile: () => wasmPath,
         // noInitialRun: true,
@@ -36,6 +38,7 @@ async function load(flv: ArrayBuffer) {
             module["FS_createDataFile"]("/", "input.flv", new Uint8Array(flv), true, false, false)
         }],
         postRun: [async () => {
+            start.innerText = "Processing Audio..."
             const audioFile = new module["AVAudioFile"]("/input.flv");
             console.log(audioFile);
             if (!audioFile.isFailed) {
@@ -49,6 +52,7 @@ async function load(flv: ArrayBuffer) {
             const file = new File([audio], audioFilePath, {type: `audio/${audioFilePath.split(".")[1]}`})
             audioPlayer.src = URL.createObjectURL(file)
 
+            start.innerText = "Processing Video..."
             const videoFile = new module["AVVideoFile"]("/input.flv");
             if (videoFile.isFailed) return alert("failed to decode file! (see browser developer tools console)")
             console.log(videoFile);
@@ -60,6 +64,7 @@ async function load(flv: ArrayBuffer) {
             const imgDat = ctx.createImageData(width, height);
             // audioPlayer.play()
 
+            start.innerText = "Ready!"
             while (videoFile.readFrame() == 0) {
                 const isVideoStream = videoFile.isVideoStream()
                 if (isVideoStream) {
