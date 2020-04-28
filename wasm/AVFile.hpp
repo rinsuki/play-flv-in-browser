@@ -14,6 +14,7 @@ class AVFile
     SwsContext *swsCtx;
 
     uint8_t *out = nullptr;
+    unsigned int size;
 
 public:
     bool isFailed = false;
@@ -80,6 +81,12 @@ public:
             return;
         }
 
+        size = 4 * codecContext->width * codecContext->height;
+        out = (uint8_t *)malloc(size);
+        swsCtx = sws_getContext(
+            /* src */ codecContext->width, codecContext->height, codecContext->pix_fmt,
+            /* dst */ codecContext->width, codecContext->height, AV_PIX_FMT_RGBA,
+            SWS_BILINEAR, NULL, NULL, NULL);
         packet = (AVPacket *)malloc(sizeof(AVPacket));
     }
 
@@ -130,14 +137,6 @@ public:
 
     emscripten::val inline convertFrameToRGB()
     {
-        swsCtx = sws_getCachedContext(
-            swsCtx,
-            /* src */ frame->width, frame->height, (AVPixelFormat)frame->format,
-            /* dst */ frame->width, frame->height, AV_PIX_FMT_RGBA,
-            SWS_BILINEAR, NULL, NULL, NULL);
-        const unsigned int size = 4 * frame->width * frame->height;
-        if (out == nullptr)
-            out = (uint8_t *)malloc(size);
         uint8_t *argb[1] = {out};
         int argb_stride[1] = {4 * frame->width};
         sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
