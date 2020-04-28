@@ -1,0 +1,45 @@
+on:
+  push:
+    branches:
+    - master
+  
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      # setup emscripten
+      - uses: actions/checkout@v2
+        with:
+          repository: 'emscripten-core/emsdk'
+          path: emsdk
+      - run: |
+          cd emsdk
+          ./emsdk install sdk-1.39.13-64bit
+          ./emsdk activate --embedded sdk-1.39.13-64bit
+      # build ffmpeg
+      - run: source ./emsdk_env.sh && cd ffmpeg && ./build-ffmpeg.sh
+      # build application
+      - name: Install dependencies
+        run: yarn install
+      - name: Build
+        run: NODE_ENV=production yarn parcel build ./src/index.html
+      # upload to dist branch
+      - uses: actions/checkout@v2
+        with:
+          ref: dist
+          path: ./dist-branch
+      - run: rm -rf ./dist-branch/* && cp -r ./dist/* ./dist-branch/
+      - run: |
+          COMMIT=`git rev-parse HEAD`
+          cd build-result
+          git config --local user.email "41898282@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+          git add -A .
+          git commit -m "update with $COMMIT"
+          git push
+  
