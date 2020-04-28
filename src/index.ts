@@ -38,8 +38,12 @@ async function load(flv: ArrayBuffer) {
             const file = new module["AVFile"]("/input.flv");
             if (file.isFailed) return alert("failed to decode file! (see browser developer tools console)")
             console.log(file);
-            var ctx: CanvasRenderingContext2D | undefined = undefined
-            var imgDat: ImageData | undefined = undefined
+            const width = file.width();
+            const height = file.height();
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            const imgDat = ctx.createImageData(width, height);
             while (file.readFrame() == 0) {
                 const isVideoStream = file.isVideoStream()
                 if (isVideoStream) {
@@ -48,14 +52,6 @@ async function load(flv: ArrayBuffer) {
                     }
                     while (file.receiveFrame() == 0) {
                         fps++
-                        if (imgDat == null || ctx == null) {
-                            const width = file.width();
-                            const height = file.height();
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx = canvas.getContext("2d");
-                            imgDat = ctx.createImageData(width, height);
-                        }
                         const received: Uint8Array = file.convertFrameToRGB();
                         imgDat.data.set(received);
                         ctx.putImageData(imgDat, 0, 0)

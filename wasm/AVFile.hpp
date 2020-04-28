@@ -127,12 +127,12 @@ public:
 
     int inline width()
     {
-        return frame->width;
+        return codecContext->width;
     }
 
     int inline height()
     {
-        return frame->height;
+        return codecContext->height;
     }
 
     emscripten::val inline convertFrameToRGB()
