@@ -69,8 +69,16 @@ async function load(flv: ArrayBuffer) {
                         fps++
                         const received: Uint8Array = videoFile.convertFrameToRGB();
                         imgDat.data.set(received);
+
+                        const pts = videoFile.pts()
+                        if (pts < (Math.floor(audioPlayer.currentTime * 1000) - 100)) {
+                            audioPlayer.currentTime = pts / 1000
+                        }
+                        while (pts > Math.floor(audioPlayer.currentTime*1000)) {
+                            await nextFrame();
+                        }
+
                         ctx.putImageData(imgDat, 0, 0)
-                        await nextFrame();
                     }
                 }
                 videoFile.packetUnref();

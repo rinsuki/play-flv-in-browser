@@ -23,6 +23,7 @@ EMSCRIPTEN_BINDINGS(my_module)
         .function("height", &AVVideoFile::height)
         .function("getPixFmt", &AVVideoFile::getPixFmt)
         .function("convertFrameToRGB", &AVVideoFile::convertFrameToRGB)
+        .function("pts", &AVVideoFile::pts)
         .property("isFailed", &AVVideoFile::getIsFailed);
     emscripten::register_vector<uint8_t>("vector<uint8_t>");
 }

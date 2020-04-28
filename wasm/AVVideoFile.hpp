@@ -135,6 +135,11 @@ public:
         return codecContext->height;
     }
 
+    int inline pts()
+    {
+        return frame->pts;
+    }
+
     emscripten::val inline convertFrameToRGB()
     {
         uint8_t *argb[1] = {out};
