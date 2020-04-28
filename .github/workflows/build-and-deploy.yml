@@ -22,7 +22,14 @@ jobs:
         ./emsdk install sdk-1.39.13-64bit
         ./emsdk activate --embedded sdk-1.39.13-64bit
     # build ffmpeg
+    - name: Cache FFmpeg binaries
+      id: cache-ffmpeg
+      uses: actions/cache@v1
+      with:
+        path: ffmpeg/built
+        key: v1-${{ hashFiles('ffmpeg/build-ffmpeg.sh') }}
     - run: source ./emsdk/emsdk_env.sh && cd ffmpeg && ./build-ffmpeg.sh
+      if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
     # build application
     - name: Install dependencies
       run: yarn install
