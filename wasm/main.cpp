@@ -2,10 +2,16 @@
 #include <emscripten/bind.h>
 
 #include "libav.h"
+#include "AVAudioFile.hpp"
 #include "AVVideoFile.hpp"
 
 EMSCRIPTEN_BINDINGS(my_module)
 {
+    emscripten::class_<AVAudioFile>("AVAudioFile")
+        .constructor<std::string>()
+        .function("output", &AVAudioFile::output)
+        .function("path", &AVAudioFile::path)
+        .property("isFailed", &AVAudioFile::getIsFailed);
     emscripten::class_<AVVideoFile>("AVVideoFile")
         .constructor<std::string>()
         .function("readFrame", &AVVideoFile::readFrame)
