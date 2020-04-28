@@ -22,7 +22,8 @@ const audioPlayer = document.getElementById("audio") as HTMLAudioElement;
 
 // Firefox の HTMLMediaElement.currentTime が25FPSぐらいでしか更新されないので
 // いい感じにごまかす
-const isFirefox = navigator.userAgent.includes("Firefox") && !location.hash.includes("disable-firefox-hack")
+const isFirefox = navigator.userAgent.includes("Firefox") && !location.hash.includes("disable-firefox-patches")
+if (isFirefox) console.log("Firefox patches enabled (you can disable with #disable-firefox-patches URL parameter)")
 let lastCurrentTime = 0
 let lastUpdatedMsec = performance.now()
 let now = performance.now()
