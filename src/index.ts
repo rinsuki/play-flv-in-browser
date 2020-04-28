@@ -35,7 +35,7 @@ async function load(flv: ArrayBuffer) {
             module["FS_createDataFile"]("/", "input.flv", new Uint8Array(flv), true, false, false)
         }],
         postRun: [async () => {
-            const file = new module["AVFile"]("/input.flv");
+            const file = new module["AVVideoFile"]("/input.flv");
             if (file.isFailed) return alert("failed to decode file! (see browser developer tools console)")
             console.log(file);
             const width = file.width();

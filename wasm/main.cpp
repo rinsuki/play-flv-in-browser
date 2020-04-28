@@ -2,22 +2,22 @@
 #include <emscripten/bind.h>
 
 #include "libav.h"
-#include "AVFile.hpp"
+#include "AVVideoFile.hpp"
 
 EMSCRIPTEN_BINDINGS(my_module)
 {
-    emscripten::class_<AVFile>("AVFile")
+    emscripten::class_<AVVideoFile>("AVVideoFile")
         .constructor<std::string>()
-        .function("readFrame", &AVFile::readFrame)
-        .function("isVideoStream", &AVFile::isVideoStream)
-        .function("packetUnref", &AVFile::packetUnref)
-        .function("sendPacket", &AVFile::sendPacket)
-        .function("receiveFrame", &AVFile::receiveFrame)
-        .function("width", &AVFile::width)
-        .function("height", &AVFile::height)
-        .function("getPixFmt", &AVFile::getPixFmt)
-        .function("convertFrameToRGB", &AVFile::convertFrameToRGB)
-        .property("isFailed", &AVFile::getIsFailed);
+        .function("readFrame", &AVVideoFile::readFrame)
+        .function("isVideoStream", &AVVideoFile::isVideoStream)
+        .function("packetUnref", &AVVideoFile::packetUnref)
+        .function("sendPacket", &AVVideoFile::sendPacket)
+        .function("receiveFrame", &AVVideoFile::receiveFrame)
+        .function("width", &AVVideoFile::width)
+        .function("height", &AVVideoFile::height)
+        .function("getPixFmt", &AVVideoFile::getPixFmt)
+        .function("convertFrameToRGB", &AVVideoFile::convertFrameToRGB)
+        .property("isFailed", &AVVideoFile::getIsFailed);
     emscripten::register_vector<uint8_t>("vector<uint8_t>");
 }
 

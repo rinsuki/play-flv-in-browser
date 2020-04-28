@@ -3,7 +3,7 @@
 #include <emscripten/val.h>
 #include "libav.h"
 
-class AVFile
+class AVVideoFile
 {
     AVFormatContext *formatContext = nullptr;
     AVStream *videoStream = nullptr;
@@ -19,7 +19,7 @@ class AVFile
 public:
     bool isFailed = false;
 
-    inline AVFile(std::string filePath)
+    inline AVVideoFile(std::string filePath)
     {
         if (avformat_open_input(&formatContext, filePath.c_str(), nullptr, nullptr) != 0)
         {
