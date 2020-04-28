@@ -7,6 +7,9 @@
 
 EMSCRIPTEN_BINDINGS(my_module)
 {
+    emscripten::value_array<AVRational>("AVRational")
+        .element(&AVRational::num)
+        .element(&AVRational::den);
     emscripten::class_<AVAudioFile>("AVAudioFile")
         .constructor<std::string>()
         .function("output", &AVAudioFile::output)
@@ -24,6 +27,7 @@ EMSCRIPTEN_BINDINGS(my_module)
         .function("getPixFmt", &AVVideoFile::getPixFmt)
         .function("convertFrameToRGB", &AVVideoFile::convertFrameToRGB)
         .function("pts", &AVVideoFile::pts)
+        .function("timeBase", &AVVideoFile::timeBase)
         .property("isFailed", &AVVideoFile::getIsFailed);
     emscripten::register_vector<uint8_t>("vector<uint8_t>");
 }

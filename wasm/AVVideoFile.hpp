@@ -135,6 +135,11 @@ public:
         return codecContext->height;
     }
 
+    AVRational inline timeBase()
+    {
+        return videoStream->time_base;
+    }
+
     int inline pts()
     {
         return frame->pts;

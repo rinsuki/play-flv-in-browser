@@ -63,7 +63,11 @@ async function load(flv: ArrayBuffer) {
             const ctx = canvas.getContext("2d");
             const imgDat = ctx.createImageData(width, height);
             // audioPlayer.play()
-
+            const timeBase = videoFile.timeBase();
+            console.log(timeBase);
+            function ptsToMsec(pts: number) {
+                return (pts*timeBase[0])/(timeBase[1]/1000)
+            }
             start.innerText = "Ready!"
             while (videoFile.readFrame() == 0) {
                 const isVideoStream = videoFile.isVideoStream()
@@ -76,7 +80,7 @@ async function load(flv: ArrayBuffer) {
                         const received: Uint8Array = videoFile.convertFrameToRGB();
                         imgDat.data.set(received);
 
-                        const pts = videoFile.pts()
+                        const pts = ptsToMsec(videoFile.pts())
                         if (pts < (Math.floor(audioPlayer.currentTime * 1000) - 100)) {
                             audioPlayer.currentTime = pts / 1000
                         }
