@@ -3,12 +3,14 @@ import wasm from "../wasm/build/wasm-module.js"
 // Parcel に wasm をロードさせずコピーだけさせてパスを取る方法がこれしか思い付かなかった
 const wasmPath = document.querySelector<HTMLLinkElement>(`link[data-wasm-file]`).href
 
-const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+const nextFrame = () => new Promise(resolve => setTimeout(resolve, 0));
 
 var fps = 0
+var waitPerSec = 0
 setInterval(() => {
-    document.getElementById("fps").innerText = `${fps}fps`
+    document.getElementById("fps").innerText = `decode: ${fps}fps wait: ${waitPerSec}call/sec`
     fps = 0
+    waitPerSec = 0
 }, 1000)
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -69,6 +71,9 @@ async function load(flv: ArrayBuffer) {
                 return (pts*timeBase[0])/(timeBase[1]/1000)
             }
             start.innerText = "Ready!"
+
+            var skipRenderFrame = 0
+            var isFirst = true
             while (videoFile.readFrame() == 0) {
                 const isVideoStream = videoFile.isVideoStream()
                 if (isVideoStream) {
@@ -77,6 +82,7 @@ async function load(flv: ArrayBuffer) {
                     }
                     while (videoFile.receiveFrame() == 0) {
                         fps++
+                        skipRenderFrame++
                         const received: Uint8Array = videoFile.convertFrameToRGB();
                         imgDat.data.set(received);
 
@@ -84,11 +90,19 @@ async function load(flv: ArrayBuffer) {
                         if (pts < (Math.floor(audioPlayer.currentTime * 1000) - 100)) {
                             audioPlayer.currentTime = pts / 1000
                         }
-                        while (pts > Math.floor(audioPlayer.currentTime*1000)) {
-                            await nextFrame();
+                        if (
+                            isFirst || // 最初のフレームは書く
+                            skipRenderFrame > 10 || // 2フレーム以上レンダリングしてない場合
+                            pts > (Math.floor(audioPlayer.currentTime*1000)) // ptsがaudioPlayer.currentTimeを越える時
+                        ) {
+                            isFirst = false
+                            skipRenderFrame = 0
+                            waitPerSec++;
+                            ctx.putImageData(imgDat, 0, 0)
+                            do {
+                                await nextFrame()
+                            } while(pts > (Math.floor(audioPlayer.currentTime*1000)))
                         }
-
-                        ctx.putImageData(imgDat, 0, 0)
                     }
                 }
                 videoFile.packetUnref();
