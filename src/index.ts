@@ -1,4 +1,4 @@
-import wasm from "../wasm/build/wasm-module.js"
+import wasm from "./wasm-module-types"
 
 // Parcel に wasm をロードさせずコピーだけさせてパスを取る方法がこれしか思い付かなかった
 const wasmPath = document.querySelector<HTMLLinkElement>(`link[data-wasm-file]`).href
@@ -17,7 +17,6 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement
 const fileSelector = document.getElementById("file") as HTMLInputElement
 const start = document.getElementById("start") as HTMLButtonElement
 
-var lastUpdated = Date.now()
 const audioPlayer = document.getElementById("audio") as HTMLAudioElement
 
 // Firefox の HTMLMediaElement.currentTime が25FPSぐらいでしか更新されないので
@@ -45,51 +44,30 @@ const highResCurrentTime = isFirefox
       }
     : () => audioPlayer.currentTime
 
-start.addEventListener("click", (e) => {
-    if (fileSelector.files.length < 1) return alert("ファイルを選択してください")
-    start.disabled = true
-    start.innerText = "Loading File..."
-    const file = fileSelector.files.item(0)
-    const reader = new FileReader()
-    reader.readAsArrayBuffer(file)
-    reader.onload = () => {
-        load(reader.result as ArrayBuffer)
-    }
-    console.log(file)
-})
-
 const wasmBinaryFetch = fetch(wasmPath).then((r) => r.arrayBuffer())
 
 async function load(flv: ArrayBuffer) {
     start.innerText = "Loading WASM..."
-    const module: EmscriptenModule = wasm({
+    const module = wasm({
         wasmBinary: await wasmBinaryFetch,
         // noInitialRun: true,
         preRun: [
             () => {
-                module["FS_createDataFile"]("/", "input.flv", new Uint8Array(flv), true, false, false)
+                module.FS.createDataFile("/", "input.flv", new Uint8Array(flv), true, false, false)
             },
         ],
         postRun: [
             async () => {
                 start.innerText = "Processing Audio..."
-                const audioFile = new module["AVAudioFile"]("/input.flv")
+                const audioFile = new module.AVAudioFile("/input.flv")
                 console.log(audioFile)
                 if (!audioFile.isFailed) {
                     console.log(audioFile.path())
-                    module["FS_createDataFile"](
-                        "/",
-                        audioFile.path().split("/").slice(-1)[0],
-                        new Uint16Array([]),
-                        true,
-                        true,
-                        true,
-                    )
                     audioFile.output()
                 }
                 if (audioFile.isFailed) return alert("failed to decode audio! (see browser developer tools console)")
                 const audioFilePath = audioFile.path()
-                const audio: Uint8Array = module["FS"].readFile(audioFilePath, {
+                const audio: Uint8Array = module.FS.readFile(audioFilePath, {
                     encoding: "binary",
                 })
                 const file = new File([audio], audioFilePath, {
@@ -98,7 +76,7 @@ async function load(flv: ArrayBuffer) {
                 audioPlayer.src = URL.createObjectURL(file)
 
                 start.innerText = "Processing Video..."
-                const videoFile = new module["AVVideoFile"]("/input.flv")
+                const videoFile = new module.AVVideoFile("/input.flv")
                 if (videoFile.isFailed) return alert("failed to decode file! (see browser developer tools console)")
                 console.log(videoFile)
                 const width = videoFile.width()
@@ -137,7 +115,6 @@ async function load(flv: ArrayBuffer) {
                             ) {
                                 audioPlayer.currentTime = pts / 1000
                                 lastCurrentTime = audioPlayer.currentTime
-                                lastUpdated = now
                             }
                             ctx.putImageData(imgDat, 0, 0)
                             if (
@@ -167,3 +144,16 @@ async function load(flv: ArrayBuffer) {
     window["module"] = module
     console.log("yay")
 }
+
+start.addEventListener("click", () => {
+    if (fileSelector.files.length < 1) return alert("ファイルを選択してください")
+    start.disabled = true
+    start.innerText = "Loading File..."
+    const file = fileSelector.files.item(0)
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file)
+    reader.onload = () => {
+        load(reader.result as ArrayBuffer)
+    }
+    console.log(file)
+})
