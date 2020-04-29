@@ -2,7 +2,7 @@
 
 DEMO → https://play-flv-in-browser.netlify.app/
 
-Play FLV in Browser.
+Play FLV in Browser (without Flash Plugin!)
 
 ## Supported Codecs
 
@@ -12,7 +12,7 @@ Play FLV in Browser.
 - MP3
 - AAC
 
-see <ffmpeg/build_ffmpeg.sh> .
+see `ffmpeg/build_ffmpeg.sh` .
 
 ## 解説
 
