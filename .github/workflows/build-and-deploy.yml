@@ -18,6 +18,11 @@ jobs:
       with:
         repository: 'emscripten-core/emsdk'
         path: emsdk
+    - name: Cache emsdk zips
+      uses: actions/cache@v1
+      with:
+        path: emsdk/zips
+        key: v1-emsdk
     - run: |
         cd emsdk
         ./emsdk install sdk-1.39.13-64bit
