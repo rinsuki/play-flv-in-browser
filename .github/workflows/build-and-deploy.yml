@@ -39,6 +39,7 @@ jobs:
       run: source ./emsdk/emsdk_env.sh && mkdir -p wasm/build && cd wasm/build && emcmake cmake .. && emmake make -j
     - name: Build parcel
       run: NODE_ENV=production yarn parcel build ./src/index.html
+    - run: cat `git rev-parse HEAD` > dist/COMMIT
     - name: Upload Build Result
       uses: actions/upload-artifact@v1
       with:
@@ -60,7 +61,7 @@ jobs:
         path: ./dist-branch
     - run: rm -rf ./dist-branch/* && cp -r ./dist/* ./dist-branch/
     - run: |
-        COMMIT=`git rev-parse HEAD`
+        COMMIT=`cat dist/COMMIT`
         cd dist-branch
         git config --local user.email "41898282@users.noreply.github.com"
         git config --local user.name "GitHub Actions"
