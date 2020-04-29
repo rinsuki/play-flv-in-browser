@@ -1,10 +1,17 @@
 {
-  "name": "play-flv-in-browser",
-  "version": "1.0.0",
-  "main": "index.js",
-  "devDependencies": {
-    "@types/emscripten": "^1.39.3",
-    "parcel-bundler": "^1.12.4",
-    "typescript": "^3.8.3"
-  }
+    "name": "play-flv-in-browser",
+    "version": "1.0.0",
+    "main": "index.js",
+    "eslintConfig": {
+        "extends": "@rinsuki"
+    },
+    "devDependencies": {
+        "@rinsuki/eslint-config": "^1.0.0",
+        "@rinsuki/prettier-config": "^1.0.0",
+        "@types/emscripten": "^1.39.3",
+        "eslint": "^6.8.0",
+        "parcel-bundler": "^1.12.4",
+        "prettier": "^2.0.5",
+        "typescript": "^3.8.3"
+    }
 }
