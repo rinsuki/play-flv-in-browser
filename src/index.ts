@@ -113,7 +113,7 @@ async function load(flv: ArrayBuffer) {
                                 const pts = ptsToMsec(videoFile.pts())
                                 if (
                                     pts < Math.floor(highResCurrentTime() * 1000) - 100 ||
-                                    pts > Math.floor(highResCurrentTime() * 1000) + 900
+                                    pts > Math.floor(highResCurrentTime() * 1000) + 1100
                                 ) {
                                     if (highResCurrentTime() == 0) {
                                         const res = videoFile.seekToFirst()
@@ -136,7 +136,7 @@ async function load(flv: ArrayBuffer) {
                                         now = performance.now()
                                     } while (
                                         pts > Math.floor(highResCurrentTime() * 1000) &&
-                                        pts < Math.floor(highResCurrentTime() * 1000) + 1000
+                                        pts < Math.floor(highResCurrentTime() * 1000) + 1500
                                     )
                                 }
                             }
