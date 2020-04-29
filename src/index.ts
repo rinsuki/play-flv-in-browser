@@ -115,7 +115,7 @@ async function load(flv: ArrayBuffer) {
                                     pts < Math.floor(highResCurrentTime() * 1000) - 100 ||
                                     pts > Math.floor(highResCurrentTime() * 1000) + 900
                                 ) {
-                                    if (highResCurrentTime() < 1) {
+                                    if (highResCurrentTime() == 0) {
                                         const res = videoFile.seekToFirst()
                                         if (res < 0) alert(`failed to seek (${res})`)
                                     }
@@ -143,11 +143,12 @@ async function load(flv: ArrayBuffer) {
                         }
                         videoFile.packetUnref()
                     }
-                    while (audioPlayer.currentTime >= 1) await nextFrame()
+                    do {
+                        await nextFrame()
+                    } while (audioPlayer.currentTime >= 1)
                     const res = videoFile.seekToFirst()
                     if (res < 0) alert(`failed to seek (${res})`)
                 }
-                console.log(videoFile)
             },
         ],
     })
