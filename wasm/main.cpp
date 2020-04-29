@@ -28,6 +28,7 @@ EMSCRIPTEN_BINDINGS(my_module)
         .function("convertFrameToRGB", &AVVideoFile::convertFrameToRGB)
         .function("pts", &AVVideoFile::pts)
         .function("timeBase", &AVVideoFile::timeBase)
+        .function("seekToFirst", &AVVideoFile::seekToFirst)
         .property("isFailed", &AVVideoFile::getIsFailed);
     emscripten::register_vector<uint8_t>("vector<uint8_t>");
 }

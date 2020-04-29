@@ -95,47 +95,57 @@ async function load(flv: ArrayBuffer) {
 
                 var skipRenderFrame = 0
                 var isFirst = true
-                while (videoFile.readFrame() == 0) {
-                    const isVideoStream = videoFile.isVideoStream()
-                    if (isVideoStream) {
-                        if (videoFile.sendPacket() != 0) {
-                            console.error("avcodec_send_packet failed")
-                        }
-                        while (videoFile.receiveFrame() == 0) {
-                            fps++
-                            skipRenderFrame++
-                            const received: Uint8Array = videoFile.convertFrameToRGB()
-                            imgDat.data.set(received)
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    while (videoFile.readFrame() == 0) {
+                        const isVideoStream = videoFile.isVideoStream()
+                        if (isVideoStream) {
+                            if (videoFile.sendPacket() != 0) {
+                                console.error("avcodec_send_packet failed")
+                            }
+                            while (videoFile.receiveFrame() == 0) {
+                                fps++
+                                skipRenderFrame++
+                                const received: Uint8Array = videoFile.convertFrameToRGB()
+                                imgDat.data.set(received)
 
-                            now = performance.now()
-                            const pts = ptsToMsec(videoFile.pts())
-                            if (
-                                pts < Math.floor(highResCurrentTime() * 1000) - 100 ||
-                                pts > Math.floor(highResCurrentTime() * 1000) + 900
-                            ) {
-                                audioPlayer.currentTime = pts / 1000
-                                lastCurrentTime = audioPlayer.currentTime
-                            }
-                            ctx.putImageData(imgDat, 0, 0)
-                            if (
-                                isFirst || // 最初のフレームは書く
-                                skipRenderFrame > 10 || // 2フレーム以上レンダリングしてない場合
-                                pts > Math.floor(highResCurrentTime() * 1000) // ptsがaudioPlayer.currentTimeを越える時
-                            ) {
-                                isFirst = false
-                                skipRenderFrame = 0
-                                waitPerSec++
-                                do {
-                                    await nextFrame()
-                                    now = performance.now()
-                                } while (
-                                    pts > Math.floor(highResCurrentTime() * 1000) &&
-                                    pts < Math.floor(highResCurrentTime() * 1000) + 1000
-                                )
+                                now = performance.now()
+                                const pts = ptsToMsec(videoFile.pts())
+                                if (
+                                    pts < Math.floor(highResCurrentTime() * 1000) - 100 ||
+                                    pts > Math.floor(highResCurrentTime() * 1000) + 900
+                                ) {
+                                    if (highResCurrentTime() < 1) {
+                                        const res = videoFile.seekToFirst()
+                                        if (res < 0) alert(`failed to seek (${res})`)
+                                    }
+                                    audioPlayer.currentTime = pts / 1000
+                                    lastCurrentTime = audioPlayer.currentTime
+                                }
+                                ctx.putImageData(imgDat, 0, 0)
+                                if (
+                                    isFirst || // 最初のフレームは書く
+                                    skipRenderFrame > 10 || // 2フレーム以上レンダリングしてない場合
+                                    pts > Math.floor(highResCurrentTime() * 1000) // ptsがaudioPlayer.currentTimeを越える時
+                                ) {
+                                    isFirst = false
+                                    skipRenderFrame = 0
+                                    waitPerSec++
+                                    do {
+                                        await nextFrame()
+                                        now = performance.now()
+                                    } while (
+                                        pts > Math.floor(highResCurrentTime() * 1000) &&
+                                        pts < Math.floor(highResCurrentTime() * 1000) + 1000
+                                    )
+                                }
                             }
                         }
+                        videoFile.packetUnref()
                     }
-                    videoFile.packetUnref()
+                    while (audioPlayer.currentTime >= 1) await nextFrame()
+                    const res = videoFile.seekToFirst()
+                    if (res < 0) alert(`failed to seek (${res})`)
                 }
                 console.log(videoFile)
             },

@@ -158,4 +158,11 @@ public:
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get((AVPixelFormat)(frame->format));
         std::cout << desc->name << std::endl;
     }
+
+    int seekToFirst() {
+        int res = av_seek_frame(formatContext, videoStream->index, videoStream->start_time, AVSEEK_FLAG_BACKWARD);
+        if (res < 0) return res;
+        avcodec_flush_buffers(codecContext);
+        return 0;
+    }
 };

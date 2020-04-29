@@ -21,6 +21,7 @@ declare class AVVideoFile {
     convertFrameToRGB(): Uint8Array
     pts(): number
     timeBase(): [number, number]
+    seekToFirst(): number
     readonly isFailed: boolean
 }
 
