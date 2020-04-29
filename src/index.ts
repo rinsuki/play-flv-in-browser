@@ -55,10 +55,12 @@ start.addEventListener("click", e => {
     console.log(file)
 })
 
+const wasmBinaryFetch = fetch(wasmPath).then(r => r.arrayBuffer())
+
 async function load(flv: ArrayBuffer) {
     start.innerText = "Loading WASM..."
     const module: EmscriptenModule = wasm({
-        locateFile: () => wasmPath,
+        wasmBinary: await wasmBinaryFetch,
         // noInitialRun: true,
         preRun: [() => {
             module["FS_createDataFile"]("/", "input.flv", new Uint8Array(flv), true, false, false)
