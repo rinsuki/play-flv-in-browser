@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -xe
-git clone -b n4.2.1 https://github.com/ffmpeg/ffmpeg src || true
+git clone -b n4.2.1 --depth 1 https://github.com/ffmpeg/ffmpeg src || true
 cd src
 
 emconfigure ./configure \
