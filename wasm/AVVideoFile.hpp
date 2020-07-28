@@ -66,6 +66,8 @@ public:
             isFailed = true;
             return;
         }
+        codecContext->thread_count = 4;
+        codecContext->thread_type = FF_THREAD_FRAME;
 
         if (avcodec_parameters_to_context(codecContext, videoStream->codecpar) < 0)
         {
