@@ -145,6 +145,11 @@ public:
         return frame->pts;
     }
 
+    emscripten::val inline outputArray(uint8_t index)
+    {
+        return emscripten::val(emscripten::typed_memory_view(frame->linesize[index] * (index == 0 ? codecContext->height : codecContext->height / 2), frame->data[index]));
+    }
+
     emscripten::val inline convertFrameToRGB()
     {
         uint8_t *argb[1] = {out};
@@ -152,7 +157,7 @@ public:
         sws_scale(swsCtx, frame->data, frame->linesize, 0, codecContext->height, argb, argb_stride);
         return emscripten::val(emscripten::typed_memory_view(size, out));
     }
-
+    
     void getPixFmt()
     {
         const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get((AVPixelFormat)(frame->format));

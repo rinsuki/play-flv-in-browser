@@ -19,6 +19,7 @@ declare class AVVideoFile {
     height(): number
     getPixFmt(): void
     convertFrameToRGB(): Uint8Array
+    outputArray(index: 0 | 1 | 2): Uint8Array
     pts(): number
     timeBase(): [number, number]
     seekToFirst(): number

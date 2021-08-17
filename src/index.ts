@@ -1,3 +1,5 @@
+import { CanvasRenderer } from "./renderers/canvas"
+import { WebGLRenderer } from "./renderers/webgl"
 import wasm from "./wasm-module-types"
 
 // Parcel に wasm をロードさせずコピーだけさせてパスを取る方法がこれしか思い付かなかった
@@ -83,8 +85,9 @@ async function load(flv: ArrayBuffer) {
                 const height = videoFile.height()
                 canvas.width = width
                 canvas.height = height
-                const ctx = canvas.getContext("2d")
-                const imgDat = ctx.createImageData(width, height)
+                const useWebGL = (document.getElementById("webgl") as HTMLInputElement).checked
+                // TODO: ここに本当にWebGLを使っていいかの確認を挟む (yuv420か？とか)
+                const renderer = useWebGL ? new WebGLRenderer(canvas) : new CanvasRenderer(canvas)
                 // audioPlayer.play()
                 const timeBase = videoFile.timeBase()
                 console.log(timeBase)
@@ -106,8 +109,6 @@ async function load(flv: ArrayBuffer) {
                             while (videoFile.receiveFrame() == 0) {
                                 fps++
                                 skipRenderFrame++
-                                const received: Uint8Array = videoFile.convertFrameToRGB()
-                                imgDat.data.set(received)
 
                                 now = performance.now()
                                 const pts = ptsToMsec(videoFile.pts())
@@ -122,12 +123,12 @@ async function load(flv: ArrayBuffer) {
                                     audioPlayer.currentTime = pts / 1000
                                     lastCurrentTime = audioPlayer.currentTime
                                 }
-                                ctx.putImageData(imgDat, 0, 0)
                                 if (
                                     isFirst || // 最初のフレームは書く
                                     skipRenderFrame > 10 || // 2フレーム以上レンダリングしてない場合
                                     pts > Math.floor(highResCurrentTime() * 1000) // ptsがaudioPlayer.currentTimeを越える時
                                 ) {
+                                    renderer.render(videoFile)
                                     isFirst = false
                                     skipRenderFrame = 0
                                     waitPerSec++
